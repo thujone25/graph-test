@@ -1,13 +1,9 @@
 <template>
-  <div class="graph-page">
-    HEY! This's a Graph page!
-  </div>
+  <div class="graph-page">HEY! This's a Graph page!</div>
 </template>
 
 <script>
-  export default {}
+export default {};
 </script>
 
-<style>
-
-</style>
+<style></style>

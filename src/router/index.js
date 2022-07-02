@@ -1,32 +1,32 @@
 import Vue from "vue";
-import VueRouter from 'vue-router';
-import {isAuthenticated} from "@/utils/authUtil";
+import VueRouter from "vue-router";
+import { isAuthenticated } from "@/utils/authUtil";
 
 Vue.use(VueRouter);
 
 const routes = [
   {
     path: "/",
-    redirect: {name: 'LoginPage'}
+    redirect: { name: "LoginPage" },
   },
   {
     path: "/login",
     name: "LoginPage",
-    meta: {forNotAuth: true},
+    meta: { forNotAuth: true },
     component: () =>
       import(/* webpackChunkName: "LoginPage" */ "../views/LoginPage.vue"),
   },
   {
     path: "/graph",
     name: "GraphPage",
-    meta: {requireAuth: true},
+    meta: { requireAuth: true },
     component: () =>
       import(/* webpackChunkName: "LoginPage" */ "../views/GraphPage.vue"),
   },
   {
-    path: '*',
-    name: '404',
-    component: () => import('@/views/404'),
+    path: "*",
+    name: "404",
+    component: () => import("@/views/404Error.vue"),
   },
 ];
 
@@ -39,11 +39,11 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
   const isUserAuthenticated = isAuthenticated();
   if (to.meta.requireAuth && !isUserAuthenticated) {
-    next('/');
+    next("/");
   } else if (to.meta.forNotAuth && isUserAuthenticated) {
-    next({name: "GraphPage"});
+    next({ name: "GraphPage" });
   } else {
-    next()
+    next();
   }
 });
 

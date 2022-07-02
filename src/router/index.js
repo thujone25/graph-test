@@ -1,23 +1,32 @@
 import Vue from "vue";
-import VueRouter from "vue-router";
-import HomeView from "../views/HomeView.vue";
+import VueRouter from 'vue-router';
+import {isAuthenticated} from "@/utils/authUtil";
 
 Vue.use(VueRouter);
 
 const routes = [
   {
     path: "/",
-    name: "home",
-    component: HomeView,
+    redirect: {name: 'LoginPage'}
   },
   {
-    path: "/about",
-    name: "about",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
+    path: "/login",
+    name: "LoginPage",
+    meta: {forNotAuth: true},
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/AboutView.vue"),
+      import(/* webpackChunkName: "LoginPage" */ "../views/LoginPage.vue"),
+  },
+  {
+    path: "/graph",
+    name: "GraphPage",
+    meta: {requireAuth: true},
+    component: () =>
+      import(/* webpackChunkName: "LoginPage" */ "../views/GraphPage.vue"),
+  },
+  {
+    path: '*',
+    name: '404',
+    component: () => import('@/views/404'),
   },
 ];
 
@@ -25,6 +34,17 @@ const router = new VueRouter({
   mode: "history",
   base: process.env.BASE_URL,
   routes,
+});
+
+router.beforeEach((to, from, next) => {
+  const isUserAuthenticated = isAuthenticated();
+  if (to.meta.requireAuth && !isUserAuthenticated) {
+    next('/');
+  } else if (to.meta.forNotAuth && isUserAuthenticated) {
+    next({name: "GraphPage"});
+  } else {
+    next()
+  }
 });
 
 export default router;

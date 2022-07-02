@@ -1,32 +1,67 @@
 <template>
   <div id="app">
-    <nav>
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </nav>
     <router-view />
   </div>
 </template>
 
 <style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  font-family: inherit;
+  line-height: 1.2em;
+  text-decoration: none;
+}
+*::-moz-focus-inner {
+  border: 0;
+}
+*:focus {
+  outline: none;
+}
+*[hidden] {
+  display: none;
+}
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: "museo-sans", "Trebuchet MS", sans-serif;
+  background: #ffffff;
+}
+input,
+select,
+textarea {
+  font-family: "museo-sans", "Trebuchet MS", sans-serif;
+}
+u {
+  text-decoration: underline;
+}
+button {
+  font-size: inherit;
+  font-family: inherit;
+  background-color: transparent;
+  border: 0;
+  cursor: pointer;
+}
+a:focus {
+  color: inherit;
+  text-decoration: none;
+}
+a:focus,
+button:focus {
+  outline: 0;
+}
+textarea {
+  overflow: auto;
+  resize: none;
+}
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-nav {
-  padding: 30px;
-}
-
-nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-nav a.router-link-exact-active {
-  color: #42b983;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
 }
 </style>

@@ -10,6 +10,7 @@ export default {
     return {
       elementsCounter: 0,
       templateRectId: null,
+      parents: [],
       j: null,
       namespace: null,
       graph: null,
@@ -32,8 +33,43 @@ export default {
           }
       });
       this.templateRectId = rect.id;
-      this.sidebarRect.isTemplateElement = true;
       rect.addTo(this.graph);
+    },
+    createParentElement() {
+      const parentRect = new this.j.shapes.standard.Rectangle();
+      parentRect.resize(180, 74);
+      parentRect.attr({
+        body: {
+            fill: 'pink'
+        }
+      });
+      this.parents.push(parentRect.id);
+      return parentRect;
+    },
+    manageParent(el) {
+      const parent = el.getParentCell();
+      if (!parent) {
+        const elemPos = el.position();
+        const newParent = this.createParentElement();
+        newParent.position(elemPos.x - 15, elemPos.y - 15);
+        newParent.embed(el);
+        newParent.addTo(this.graph);
+        el.toFront();
+      } else {
+        this.handleChildrenPos(parent);
+      }
+    },
+    handleChildrenPos(parent) {
+      const parentPos = parent.position();
+      const constX = parentPos.x + 15;
+      const cells = parent.getEmbeddedCells();
+      parent.fitEmbeds({padding: 15});
+      for (let i = 0, lim = cells.length; i < lim; i += 1) {
+        const cell = cells[i];
+        const yPos = parentPos.y + 15 + (44 * i) + (i ? (8 * i) : 0);
+        cell.position(constX, yPos);
+      }
+      parent.fitEmbeds({padding: 15});
     },
     removeElement(el) {
       el.remove();
@@ -51,6 +87,7 @@ export default {
           });
           this.createTemplateRect();
         }
+        if (!this.parents.includes(currentElement.id)) this.manageParent(currentElement);
       } else {
         if (isTemplateElem) {
           currentElement.position(15, 15);
@@ -58,6 +95,13 @@ export default {
           this.removeElement(currentElement);
         }
       }
+      this.fitAllParents()
+    },
+    fitAllParents() {
+      const elems = this.graph.getCells();
+      elems.forEach(i => {
+        if (this.parents.includes(i.id)) i.fitEmbeds({padding: 15});
+      })
     }
   },
   mounted() {
@@ -91,7 +135,7 @@ export default {
               fill: 'yellow'
           },
           label: {
-              text: 'Template',
+              text: 'Drag here to remove',
               fill: 'black'
           }
       });

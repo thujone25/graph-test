@@ -8,6 +8,10 @@ export const setAuthToken = (token) => {
   localStorage.setItem("app_auth_token", token);
 };
 
+export const Logout = () => {
+  localStorage.removeItem("app_auth_token");
+};
+
 export const getAuthToken = () => {
   return localStorage.getItem("app_auth_token");
 };

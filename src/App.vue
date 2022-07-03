@@ -5,6 +5,18 @@
 </template>
 
 <style>
+.g-button {
+  display: inline-block;
+  height: 44px;
+  line-height: 44px;
+  text-align: center;
+  border-radius: 5px;
+  background-color: pink;
+}
+.g-button:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px #63b1bc;
+}
 * {
   box-sizing: border-box;
   margin: 0;

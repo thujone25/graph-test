@@ -23,7 +23,7 @@
         autocomplete="new-password"
       />
     </label>
-    <button class="login-form__submit">Authenticate yourself!</button>
+    <button class="g-button login-form__submit">Authenticate yourself!</button>
   </form>
 </template>
 
@@ -88,14 +88,8 @@ export default {
 .login-form__submit {
   display: block;
   width: 100%;
-  height: 44px;
-  line-height: 44px;
-  text-align: center;
-  border-radius: 5px;
-  background-color: pink;
 }
-.login-form__field:focus,
-.login-form__submit:focus {
+.login-form__field:focus {
   border-color: transparent;
   box-shadow: 0 0 0 2px #63b1bc;
 }

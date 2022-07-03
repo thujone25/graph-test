@@ -1,10 +1,16 @@
 <template>
   <div class="graph-page">
+    <header class="graph-page__header">
+      <button class="g-button graph-page__btn" @click="saveGraph">Save graph!</button>
+      <button class="g-button graph-page__btn" @click="logout">Logout</button>
+    </header>
     <div ref="graphPaper" class="graph-page__graph-paper"></div>
   </div>
 </template>
 
 <script>
+import { Logout } from "@/utils/authUtil";
+
 export default {
   data() {
     return {
@@ -12,10 +18,7 @@ export default {
       templateRectId: null,
       parents: [],
       j: null,
-      namespace: null,
       graph: null,
-      paper: null,
-      sidebarRect: null,
       portTemplate: {
         position: {
           name: 'left'
@@ -36,6 +39,21 @@ export default {
     }
   },
   methods: {
+    saveGraph() {
+      const elems = this.graph.getElements();
+      elems.forEach(e => {
+        if (e.id === this.templateRectId || e.get('locked')) {
+          e.remove();
+        }
+      })
+      const graph = JSON.stringify(this.graph.toJSON());
+      localStorage.setItem("app_saved_graph", graph);
+      this.createSidebar();
+    },
+    logout() {
+      Logout();
+      this.$router.push('/');
+    },
     getPorts() {
       const leftPort = JSON.parse(JSON.stringify(this.portTemplate));
       const rightPort = JSON.parse(JSON.stringify(this.portTemplate));
@@ -91,7 +109,6 @@ export default {
       const newIndex = elemPosY <= siblingPosY ? indexOfSibling : indexOfSibling + 1;
       const newOrderArr = [...cells];
       newOrderArr.splice(newIndex, 0, elModel);
-      // parent.unembed(parent.getEmbeddedCells());
       newOrderArr.forEach(i => {
         if (i.isEmbeddedIn(parent)) parent.unembed(i);
       })
@@ -189,6 +206,32 @@ export default {
           }
         }
       })
+    },
+    parseSavedGraph() {
+      this.graph.fromJSON(JSON.parse(localStorage.getItem("app_saved_graph")));
+      const elems = this.graph.getElements();
+      elems.forEach(e => {
+        if (e.getEmbeddedCells().length) {
+          this.parents.push(e.id);
+        }
+      })
+    },
+    createSidebar() {
+      const sidebarRect = new this.j.shapes.standard.Rectangle();
+      sidebarRect.set('locked', true);
+      sidebarRect.position(0, 0);
+      sidebarRect.resize(180, 1000);
+      sidebarRect.attr({
+          body: {
+              fill: 'yellow'
+          },
+          label: {
+              text: 'Drop here to remove',
+              fill: 'black'
+          }
+      });
+      sidebarRect.addTo(this.graph);
+      this.createTemplateRect();
     }
   },
   mounted() {
@@ -218,24 +261,13 @@ export default {
           return true;
         }
       });
-      this.sidebarRect = new this.j.shapes.standard.Rectangle();
-      this.sidebarRect.set('locked', true);
-      this.sidebarRect.position(0, 0);
-      this.sidebarRect.resize(180, 1000);
-      this.sidebarRect.attr({
-          body: {
-              fill: 'yellow'
-          },
-          label: {
-              text: 'Drop here to remove',
-              fill: 'black'
-          }
-      });
-      this.sidebarRect.addTo(this.graph);
-      this.createTemplateRect();
       paper.on('element:pointerup', (el) => {
         if (!el.model.get('locked')) this.onElPointerUp(el);
       });
+      if (localStorage.getItem("app_saved_graph")) {
+        this.parseSavedGraph();
+      }
+      this.createSidebar();
     }
   }
 };
@@ -246,6 +278,21 @@ export default {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+}
+.graph-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  padding: 0 16px;
+  height: 60px;
+  border-bottom: 2px solid gray;
+}
+.graph-page__btn {
+  width: 150px;
+}
+.graph-page__btn ~ .graph-page__btn {
+  margin-left: 16px;
 }
 .graph-page__graph-paper {
   flex-grow: 1;

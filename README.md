@@ -1,5 +1,9 @@
 # graph-test
 
+## Creds to use
+EMAIL: "graph.app.admin@graphapp.com"
+PASSWORD: "11111118"
+
 ## Project setup
 ```
 yarn install

@@ -115,8 +115,14 @@ export default {
         width: '100%',
         height: '100%',
         gridSize: 1,
-        embeddingMode: true,
         cellViewNamespace: this.namespace,
+        embeddingMode: true,
+        validateEmbedding: (childView, parentView) => {
+          const parentID = parentView.model.id;
+          const childID = childView.model.id;
+          if (this.parents.includes(parentID) && !this.parents.includes(childID)) return true;
+          return false;
+        },
         interactive: (cellView) => {
           if (cellView.model.get('locked')) {
             return {
@@ -135,7 +141,7 @@ export default {
               fill: 'yellow'
           },
           label: {
-              text: 'Drag here to remove',
+              text: 'Drop here to remove',
               fill: 'black'
           }
       });
@@ -144,29 +150,6 @@ export default {
       this.paper.on('element:pointerup', (el) => {
         if (!el.model.get('locked')) this.onElPointerUp(el);
       });
-      // var rect = new this.j.shapes.standard.Rectangle();
-      // rect.position(100, 30);
-      // rect.resize(100, 40);
-      // rect.attr({
-      //     body: {
-      //         fill: 'blue'
-      //     },
-      //     label: {
-      //         text: 'Hello',
-      //         fill: 'white'
-      //     }
-      // });
-      // rect.addTo(this.graph);
-
-      // var rect2 = rect.clone();
-      // rect2.translate(300, 0);
-      // rect2.attr('label/text', 'World!');
-      // rect2.addTo(this.graph);
-
-      // var link = new this.j.shapes.standard.Link();
-      // link.source(rect);
-      // link.target(rect2);
-      // link.addTo(this.graph);
     }
   }
 };
@@ -180,6 +163,5 @@ export default {
 }
 .graph-page__graph-paper {
   flex-grow: 1;
-  border: 5px solid green;
 }
 </style>

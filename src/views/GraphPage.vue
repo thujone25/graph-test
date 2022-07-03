@@ -46,17 +46,57 @@ export default {
       this.parents.push(parentRect.id);
       return parentRect;
     },
+    handleReordering(el, sibling) {
+      const elModel = el.model;
+      const parent = sibling.getParentCell();
+      const cells = parent.getEmbeddedCells();
+      const elemPosY = elModel.position().y;
+      const siblingPosY = sibling.position().y;
+      const indexOfSibling = cells.indexOf(sibling);
+      const newIndex = elemPosY <= siblingPosY ? indexOfSibling : indexOfSibling + 1;
+      const newOrderArr = [...cells];
+      newOrderArr.splice(newIndex, 0, elModel);
+      // parent.unembed(parent.getEmbeddedCells());
+      newOrderArr.forEach(i => {
+        if (i.isEmbeddedIn(parent)) parent.unembed(i);
+      })
+      newOrderArr.forEach(i => {
+        parent.embed(i);
+      })
+      this.handleChildrenPos(parent);
+    },
     manageParent(el) {
-      const parent = el.getParentCell();
-      if (!parent) {
-        const elemPos = el.position();
-        const newParent = this.createParentElement();
-        newParent.position(elemPos.x - 15, elemPos.y - 15);
-        newParent.embed(el);
-        newParent.addTo(this.graph);
-        el.toFront();
-      } else {
+      const elModel = el.model;
+      const parent = elModel.getParentCell();
+      if (parent) {
         this.handleChildrenPos(parent);
+      } else {
+        const intersectedEl = this.intersectsWithElem(el);
+        if (intersectedEl) {
+          this.handleReordering(el, intersectedEl);
+        } else {
+          const elemPos = elModel.position();
+          const newParent = this.createParentElement();
+          newParent.position(elemPos.x - 15, elemPos.y - 15);
+          newParent.embed(elModel);
+          newParent.addTo(this.graph);
+          elModel.toFront();
+        }
+      }
+    },
+    isParentEl(el) {
+      return this.parents.includes(el?.model ? el?.model.id : el?.id);
+    },
+    intersectsWithElem(el) {
+      const allElems = this.graph.getCells();
+      for (const cell of allElems) {
+        if (
+            el.getBBox().intersect(cell.getBBox()) &&
+            !this.isParentEl(cell) &&
+            cell.id !== el.model.id
+          ) {
+          return cell;
+        }
       }
     },
     handleChildrenPos(parent) {
@@ -71,9 +111,6 @@ export default {
       }
       parent.fitEmbeds({padding: 15});
     },
-    removeElement(el) {
-      el.remove();
-    },
     onElPointerUp(el) {
       const currentElement = el.model;
       const isTemplateElem = currentElement.id === this.templateRectId
@@ -87,20 +124,20 @@ export default {
           });
           this.createTemplateRect();
         }
-        if (!this.parents.includes(currentElement.id)) this.manageParent(currentElement);
+        if (!this.isParentEl(el)) this.manageParent(el);
       } else {
         if (isTemplateElem) {
           currentElement.position(15, 15);
         } else {
-          this.removeElement(currentElement);
+          currentElement.remove();
         }
       }
-      this.fitAllParents()
+      this.fitAllParents();
     },
     fitAllParents() {
       const elems = this.graph.getCells();
       elems.forEach(i => {
-        if (this.parents.includes(i.id)) i.fitEmbeds({padding: 15});
+        if (this.isParentEl(i)) this.handleChildrenPos(i);
       })
     }
   },
@@ -118,9 +155,7 @@ export default {
         cellViewNamespace: this.namespace,
         embeddingMode: true,
         validateEmbedding: (childView, parentView) => {
-          const parentID = parentView.model.id;
-          const childID = childView.model.id;
-          if (this.parents.includes(parentID) && !this.parents.includes(childID)) return true;
+          if (this.isParentEl(parentView) && !this.isParentEl(childView)) return true;
           return false;
         },
         interactive: (cellView) => {

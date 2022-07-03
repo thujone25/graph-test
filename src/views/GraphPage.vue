@@ -129,15 +129,26 @@ export default {
         if (isTemplateElem) {
           currentElement.position(15, 15);
         } else {
+          if (this.isParentEl(currentElement)) this.removeParentID(currentElement.id);
           currentElement.remove();
         }
       }
-      this.fitAllParents();
+      this.watchAllParents();
     },
-    fitAllParents() {
+    removeParentID(id) {
+      this.parents.splice(this.parents.indexOf(id), 1);
+    },
+    watchAllParents() {
       const elems = this.graph.getCells();
       elems.forEach(i => {
-        if (this.isParentEl(i)) this.handleChildrenPos(i);
+        if (this.isParentEl(i)) {
+          if (i.getEmbeddedCells()?.length) {
+            this.handleChildrenPos(i);
+          } else {
+            this.removeParentID(i.id);
+            i.remove();
+          }
+        }
       })
     }
   },

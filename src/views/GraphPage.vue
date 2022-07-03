@@ -8,11 +8,56 @@
 export default {
   data() {
     return {
+      elementsCounter: 0,
+      templateRectId: null,
       j: null,
       namespace: null,
       graph: null,
       paper: null,
       sidebarRect: null
+    }
+  },
+  methods: {
+    createTemplateRect() {
+      const rect = new this.j.shapes.standard.Rectangle();
+      rect.position(15, 15);
+      rect.resize(150, 44);
+      rect.attr({
+          body: {
+              fill: 'blue'
+          },
+          label: {
+              text: 'Template elem',
+              fill: 'white'
+          }
+      });
+      this.templateRectId = rect.id;
+      this.sidebarRect.isTemplateElement = true;
+      rect.addTo(this.graph);
+    },
+    removeElement(el) {
+      el.remove();
+    },
+    onElPointerUp(el) {
+      const currentElement = el.model;
+      const isTemplateElem = currentElement.id === this.templateRectId
+      if (currentElement.position()?.x > 180) {
+        if (isTemplateElem) {
+          this.elementsCounter += 1;
+          currentElement.attr({
+            label: {
+                text: `Element #${this.elementsCounter}`
+            }
+          });
+          this.createTemplateRect();
+        }
+      } else {
+        if (isTemplateElem) {
+          currentElement.position(15, 15);
+        } else {
+          this.removeElement(currentElement);
+        }
+      }
     }
   },
   mounted() {
@@ -51,6 +96,10 @@ export default {
           }
       });
       this.sidebarRect.addTo(this.graph);
+      this.createTemplateRect();
+      this.paper.on('element:pointerup', (el) => {
+        if (!el.model.get('locked')) this.onElPointerUp(el);
+      });
       // var rect = new this.j.shapes.standard.Rectangle();
       // rect.position(100, 30);
       // rect.resize(100, 40);

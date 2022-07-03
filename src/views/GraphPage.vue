@@ -15,22 +15,57 @@ export default {
       namespace: null,
       graph: null,
       paper: null,
-      sidebarRect: null
+      sidebarRect: null,
+      portTemplate: {
+        position: {
+          name: 'left'
+        },
+        attrs: { 
+          portBody: { 
+            magnet: true,
+            r: 6,
+            fill: '#E6A502',
+            stroke:'#023047'
+          }
+        },
+        markup: [{
+          tagName: 'circle',
+          selector: 'portBody'
+        }]
+      }
     }
   },
   methods: {
+    getPorts() {
+      const leftPort = JSON.parse(JSON.stringify(this.portTemplate));
+      const rightPort = JSON.parse(JSON.stringify(this.portTemplate));
+      leftPort.position.name = 'left';
+      rightPort.position.name = 'right';
+      return [
+        leftPort,
+        rightPort,
+      ]
+    },
     createTemplateRect() {
-      const rect = new this.j.shapes.standard.Rectangle();
-      rect.position(15, 15);
-      rect.resize(150, 44);
-      rect.attr({
+      const ports = this.getPorts();
+      const rect = new this.j.shapes.standard.Rectangle({
+        position: { x: 15, y: 15 },
+        size: { width: 150, height: 44 },
+        ports: {
+          groups: {
+            left: ports[0],
+            right: ports[1],
+          }
+        },
+        attrs: {
           body: {
-              fill: 'blue'
+            fill: 'blue'
           },
           label: {
-              text: 'Template elem',
-              fill: 'white'
-          }
+            text: 'Template elem',
+            fill: 'white'
+          },
+        }
       });
       this.templateRectId = rect.id;
       rect.addTo(this.graph);
@@ -88,7 +123,7 @@ export default {
       return this.parents.includes(el?.model ? el?.model.id : el?.id);
     },
     intersectsWithElem(el) {
-      const allElems = this.graph.getCells();
+      const allElems = this.graph.getElements();
       for (const cell of allElems) {
         if (
             el.getBBox().intersect(cell.getBBox()) &&
@@ -122,6 +157,10 @@ export default {
                 text: `Element #${this.elementsCounter}`
             }
           });
+          currentElement.addPorts([
+            {group: 'left'},
+            {group: 'right'},
+          ]);
           this.createTemplateRect();
         }
         if (!this.isParentEl(el)) this.manageParent(el);
@@ -155,15 +194,16 @@ export default {
   mounted() {
     this.j = window.joint;
     if (this.j) {
-      this.namespace = this.j.shapes;
-      this.graph = new this.j.dia.Graph({}, { cellNamespace: this.namespace });
-      this.paper = new this.j.dia.Paper({
+      const namespace = this.j.shapes;
+      this.graph = new this.j.dia.Graph({}, { cellNamespace: namespace });
+      const paper = new this.j.dia.Paper({
         el: this.$refs.graphPaper,
         model: this.graph,
         width: '100%',
         height: '100%',
         gridSize: 1,
-        cellViewNamespace: this.namespace,
+        cellViewNamespace: namespace,
+        linkPinning: false,
         embeddingMode: true,
         validateEmbedding: (childView, parentView) => {
           if (this.isParentEl(parentView) && !this.isParentEl(childView)) return true;
@@ -193,7 +233,7 @@ export default {
       });
       this.sidebarRect.addTo(this.graph);
       this.createTemplateRect();
-      this.paper.on('element:pointerup', (el) => {
+      paper.on('element:pointerup', (el) => {
         if (!el.model.get('locked')) this.onElPointerUp(el);
       });
     }

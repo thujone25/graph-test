@@ -21,7 +21,7 @@ const routes = [
     name: "GraphPage",
     meta: { requireAuth: true },
     component: () =>
-      import(/* webpackChunkName: "LoginPage" */ "../views/GraphPage.vue"),
+      import(/* webpackChunkName: "GraphPage" */ "../views/GraphPage.vue"),
   },
   {
     path: "*",
